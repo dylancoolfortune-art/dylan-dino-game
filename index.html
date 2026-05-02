@@ -104,12 +104,10 @@
   <button onclick="restart()">Restart</button>
 </div>
 
-<!-- 🏆 100 EVENT POPUP -->
 <div id="speedPopup">
   <img src="speed.png">
 </div>
 
-<!-- 🔊 AUDIO (your file) -->
 <audio id="bgmusic" loop>
   <source src="bb7a8fe7-a907-4d9e-9d6d-60dd415461fd.mp3" type="audio/mpeg">
 </audio>
@@ -133,7 +131,7 @@ let speedEventTriggered = false;
 
 document.getElementById("high").innerText = highScore;
 
-// 🔊 AUDIO FIX (Netlify-safe)
+// 🔊 AUDIO FIX
 const music = document.getElementById("bgmusic");
 let musicStarted = false;
 
@@ -154,22 +152,30 @@ const player = {
   jumping: false
 };
 
-// 🟥 OBSTACLES
 const obstacles = [];
-
 const gravity = 0.8;
 
-// ================= 100 EVENT =================
-function trigger100Event() {
-  paused = true;
+// ================= LOGO =================
+const logo = document.getElementById("logo");
+const lctx = logo.getContext("2d");
 
-  document.getElementById("speedPopup").style.display = "flex";
+function drawLogo() {
+  lctx.clearRect(0, 0, 80, 80);
 
-  setTimeout(() => {
-    document.getElementById("speedPopup").style.display = "none";
-    paused = false;
-  }, 4000);
+  lctx.fillStyle = "#00c853";
+  lctx.fillRect(20, 40, 30, 18);
+  lctx.fillRect(42, 25, 18, 14);
+  lctx.fillRect(10, 48, 10, 8);
+  lctx.fillRect(25, 58, 6, 10);
+  lctx.fillRect(38, 58, 6, 10);
+
+  lctx.fillStyle = "black";
+  lctx.fillRect(50, 30, 3, 3);
+
+  requestAnimationFrame(drawLogo);
 }
+
+drawLogo();
 
 // ================= INPUT =================
 document.addEventListener("keydown", e => {
@@ -181,7 +187,7 @@ document.addEventListener("keydown", e => {
   }
 });
 
-// ================= SPAWN =================
+// ================= OBSTACLES =================
 function spawnObstacle() {
   if (!gameRunning || paused) return;
 
@@ -265,10 +271,7 @@ function gameOver() {
   }
 
   document.getElementById("high").innerText = highScore;
-
-  document.getElementById("finalText").innerText =
-    "Game Over! Score: " + score;
-
+  document.getElementById("finalText").innerText = "Game Over! Score: " + score;
   document.getElementById("gameOver").style.display = "flex";
 }
 
@@ -328,7 +331,6 @@ function update() {
 
       if (score === 100 && !speedEventTriggered) {
         speedEventTriggered = true;
-        trigger100Event();
       }
 
       if (score % 20 === 0) startDisco();
@@ -337,7 +339,7 @@ function update() {
   }
 }
 
-// ================= DRAW LOOP =================
+// ================= LOOP =================
 function draw() {
   ctx.clearRect(0, 0, 800, 300);
 
