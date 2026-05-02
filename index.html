@@ -73,11 +73,11 @@
 
 <body>
 
-<!-- 🦖 LOGO -->
 <canvas id="logo" width="80" height="80"></canvas>
 
 <div id="ui">
   <div>Score: <span id="score">0</span></div>
+  <div>High Score: <span id="high">0</span></div>
   <div>❤️ <span id="hearts">❤️❤️❤️❤️</span></div>
 </div>
 
@@ -107,6 +107,9 @@ const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
 let score = 0;
+let highScore = localStorage.getItem("dylanHigh") || 0;
+document.getElementById("high").innerText = highScore;
+
 let speed = 5;
 
 let bossMode = false;
@@ -183,7 +186,7 @@ function triggerCutscene(){
   },4000);
 }
 
-// ================= BOSS START =================
+// ================= BOSS =================
 function startBossMode(){
   bossMode=true;
   speed=3;
@@ -197,7 +200,7 @@ function startBossMode(){
   document.getElementById("bossBarWrap").style.display="block";
 }
 
-// ================= DISCO MODE =================
+// ================= DISCO =================
 function startDisco(){
   disco=true;
   discoTimer=1200;
@@ -218,9 +221,8 @@ function updateDisco(){
   }
 }
 
-// ================= PLAYER (BUGATTI + HEAD) =================
+// ================= PLAYER =================
 function drawPlayer(){
-
   ctx.fillStyle="#1565c0";
   ctx.fillRect(player.x,player.y+10,50,15);
   ctx.fillRect(player.x+10,player.y,30,15);
@@ -231,14 +233,12 @@ function drawPlayer(){
   ctx.arc(player.x+40,player.y+28,6,0,Math.PI*2);
   ctx.fill();
 
-  // dino head
   ctx.fillStyle="#1b5e20";
   ctx.fillRect(player.x+28,player.y-12,12,12);
 }
 
 // ================= NYAN =================
 function drawNyan(o){
-
   o.anim=(o.anim||0)+0.15;
 
   const colors=["#ff0000","#ff9900","#ffff00","#00ff00","#00ccff","#cc00ff"];
@@ -252,9 +252,8 @@ function drawNyan(o){
   ctx.fillRect(o.x-5,o.y-5,14,10);
 }
 
-// ================= BOSS NYAN CAT (FIXED LOOK) =================
+// ================= BOSS VISUAL =================
 function drawBoss(){
-
   const x=620, y=140;
 
   const colors=["#ff0000","#ff9900","#ffff00","#00ff00","#00ccff","#cc00ff"];
@@ -266,7 +265,6 @@ function drawBoss(){
 
   ctx.fillStyle="pink";
   ctx.fillRect(x+80,y,60,40);
-
   ctx.fillRect(x+70,y-10,30,30);
 
   ctx.fillStyle="black";
@@ -281,18 +279,31 @@ function collide(a,b){
   return dx*dx+dy*dy < (a.r+b.r)*(a.r+b.r);
 }
 
-// ================= SPAWN =================
+// ================= SPAWN (FIXED BOSS SPACING) =================
 function spawn(){
   if(paused) return;
 
-  const last=obstacles[obstacles.length-1];
-  if(last && last.x>650) return;
+  const last = obstacles[obstacles.length - 1];
+
+  if(last){
+    const minGap = bossMode ? 220 : 150;
+    if(last.x > 800 - minGap) return;
+  }
+
+  let spawnSpeed;
+
+  if(bossMode){
+    const pattern = [3,4,5,4];
+    spawnSpeed = pattern[score % pattern.length];
+  } else {
+    spawnSpeed = speed;
+  }
 
   obstacles.push({
     x:800,
     y:240,
     r:12,
-    speed: bossMode ? (3+Math.random()*3) : speed,
+    speed:spawnSpeed,
     passed:false,
     anim:0
   });
@@ -325,10 +336,12 @@ function update(){
         o.x=-100;
 
         if(hearts===0){
+          saveHighScore();
           alert("Game Over!");
           location.reload();
         }
       } else {
+        saveHighScore();
         location.reload();
       }
     }
@@ -352,14 +365,22 @@ function update(){
         score++;
         document.getElementById("score").innerText=score;
 
+        if(score%20===0) startDisco();
+
         if(score===100 && !cutsceneDone){
           cutsceneDone=true;
           triggerCutscene();
         }
-
-        if(score%20===0) startDisco();
       }
     }
+  }
+}
+
+// ================= HIGH SCORE =================
+function saveHighScore(){
+  if(score > highScore){
+    highScore = score;
+    localStorage.setItem("dylanHigh", highScore);
   }
 }
 
